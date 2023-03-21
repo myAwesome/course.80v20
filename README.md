@@ -2,3 +2,9 @@
 
 node Js server with Knex
 
+
+commit - зберегти
+push   - залити
+pull   - стянути
+
+merge
