@@ -8,3 +8,5 @@ push   - залити
 pull   - стянути
 
 merge
+
+checkout - перейти на коміт
