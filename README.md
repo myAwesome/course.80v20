@@ -1,3 +1,4 @@
 # course.80v20
 
-node Js server
+node Js server with Knex
+
