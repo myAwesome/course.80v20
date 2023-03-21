@@ -7,4 +7,4 @@ commit - зберегти
 push   - залити
 pull   - стянути
 
-merge
+merge - злиття
