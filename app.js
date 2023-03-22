@@ -1,45 +1,58 @@
 console.clear()
-console.log(`SIMPLE NODE JS SERVER \n`)
+console.log(`SIMPLE NODE JS SERVER http://localhost:8888\n`)
 const http = require('http')
 
-const users = []
+const users = [
+    {
+        id: 1,
+        name: "Vova",
+        age: 33,
+        hobby: 'tennis'
+    }
+]
 
-
-
-http.createServer(function (request, response) {
-    routing(request, response)
-}).listen(8888);
-
-const routing = (request, response) => {
+const routing = async (request, response) => {
     const method = request.method
     const url = request.url
     const currentDate = new Date().toUTCString()
     console.log(`${currentDate} - ${method} - ${url}`)
+    let body
     switch(url) {
-        case 'users':
-            if (method === GET) {
-                // todo: список юзерів
-                users
-                // response.end(`users GET`);
+
+        case '/users':
+            if (method === 'GET') {
+                response.setHeader("Content-Type", "application/json");
+                response.writeHead(200);
+                response.end(JSON.stringify(users));
             }
             break
         case '/user':
             switch (method){
                 case 'GET':
-                    // todo: перший  юзер
-                    response.end(`users GET`);
+                    response.setHeader("Content-Type", "application/json");
+                    response.writeHead(200);
+                    response.end(JSON.stringify(users[0]));
                     break;
                 case 'POST':
                     // todo: створення юзера
-                    response.end(`users POST`);
+                    body = await bodyParser(request)
+                    users.push(body)
+                    response.setHeader("Content-Type", "application/json");
+                    response.writeHead(200);
+                    response.end(JSON.stringify(body));
                     break;
                 case 'PUT':
-                    // todo: редагування першого юзера
-                    response.end(`users PUT`);
+                    body = await bodyParser(request)
+                    users[0] = body
+                    response.setHeader("Content-Type", "application/json");
+                    response.writeHead(200);
+                    response.end(JSON.stringify(body));
                     break;
                 case 'DELETE':
-                    // todo: видалення першого юзера
-                    response.end(`users DELETE`);
+                    users.pop()
+                    response.setHeader("Content-Type", "application/json");
+                    response.end('deleted');
+
                     break;
             }
             break;
@@ -63,4 +76,18 @@ const routing = (request, response) => {
             response.writeHead(404);
             response.end('not found');
     }
+
+}
+
+http.createServer(routing).listen(8888);
+const bodyParser = (request) =>{
+    return new Promise((resolve, reject)=>{
+        let body = [];
+        request.on('data', (chunk) => {
+            body.push(chunk);
+        }).on('end', () => {
+            body = Buffer.concat(body).toString();
+            resolve(JSON.parse(body))
+        });
+    })
 }
