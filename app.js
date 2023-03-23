@@ -13,21 +13,21 @@ const users = [
 
 const routing = async (request, response) => {
     response.setHeader("Content-Type", "application/json");
-    response.writeHead(200);
 
     const method = request.method
     const url = request.url
-    const currentDate = new Date().toUTCString()
+    const currentDate = new Date()
     console.log(`${currentDate} - ${method} - ${url}`)
     let body
     switch(url) {
-        // GET http://localhost:8888/users
         case '/users':
             if (method === 'GET') {
                 response.end(JSON.stringify(users));
+            } else {
+                response.writeHead(404);
+                response.end('not found');
             }
             break
-        // POST http://localhost:8888/user
         case '/user':
             if (method === 'POST') {
                 body = await bodyParser(request)
@@ -36,22 +36,48 @@ const routing = async (request, response) => {
                 break;
             }
             break;
-        case url.match(/\/user\/\d+/)?.input :
+        case url.match(/\/user\/\d+/)?.input:
+            const myRegexp = /\/user\/(\d)+/g;
+            const matches = myRegexp.exec(url);
+            const id = matches[1]
+            let userIndex
+            let [user] = users.filter((u,index)=>{
+                if ( u.id == id){
+                    userIndex = index
+                    return true
+                } else{
+                    return false
+                }
+            })
             switch (method){
-                // GET http://localhost:8888/user/1
                 case 'GET':
-                    response.end(JSON.stringify(users[0]));
+                    if (user) {
+                        response.end(JSON.stringify(user));
+                    } else {
+                        response.writeHead(404);
+                        response.end('not found');
+                    }
                     break;
-                // PUT http://localhost:8888/user/1
                 case 'PUT':
-                    body = await bodyParser(request)
-                    users[0] = body
-                    response.end(JSON.stringify(body));
+                    if (user) {
+                        body = await bodyParser(request)
+                        users[userIndex] = body
+                        response.end(JSON.stringify(user));
+                    } else {
+                        response.writeHead(404);
+                        response.end('not found');
+                    }
+
                     break;
-                // DELETE http://localhost:8888/user/1
                 case 'DELETE':
-                    users.pop()
-                    response.end('deleted');
+                    if (user) {
+                        delete users[userIndex]
+                        response.end('deleted');
+
+                    } else {
+                        response.writeHead(404);
+                        response.end('not found');
+                    }
                     break;
             }
             break;
@@ -59,10 +85,12 @@ const routing = async (request, response) => {
             response.writeHead(404);
             response.end('not found');
     }
-
 }
 
 http.createServer(routing).listen(8888);
+
+
+// функція читає json body з методів POST i PUT
 const bodyParser = (request) =>{
     return new Promise((resolve, reject)=>{
         let body = [];
