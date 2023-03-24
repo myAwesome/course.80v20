@@ -34,6 +34,9 @@ const routing = async (request, response) => {
                 users.push(body)
                 response.end(JSON.stringify(body));
                 break;
+            } else {
+                response.writeHead(404);
+                response.end('not found');
             }
             break;
         case url.match(/\/user\/\d+/)?.input:
